@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Raise Claim | Claim Management System</title>
+
+    <link rel="stylesheet" href="style.css?v=12347">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="main-header">
+        <h1>Claim Management System</h1>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <a href="my_claims.html">My Claims</a>
+        <a href="raise_claim.html" class="active">Raise Claim</a>
+
+        <span id="mgr" hidden>
+            <a href="approve_claims.html">Approve Claims</a>
+        </span>
+
+        <a href="logout">Logout</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="page-content">
+
+        <h2 class="page-title">Raise New Claim</h2>
+
+        <!-- Messages -->
+        <div class="message-container">
+            <p id="msg" class="success" role="status"></p>
+            <p id="err" class="error" role="alert"></p>
+        </div>
+
+        <!-- Claim Form -->
+        <form action="submit-claim" method="post" class="claim-form">
+
+            <div class="form-group">
+                <label for="contact">Contact Number:</label>
+
+                <input
+                    type="tel"
+                    name="contact"
+                    id="contact"
+                    placeholder="Enter Contact Number"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="expense">Expense Type:</label>
+
+                <select
+                    name="expense_code"
+                    id="expense"
+                    required
+                >
+                    <option value="">Loading expense categories...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Amount (₹):</label>
+
+                <input
+                    type="number"
+                    name="amount"
+                    id="amount"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="Enter Claim Amount"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description:</label>
+
+                <textarea
+                    name="description"
+                    id="description"
+                    rows="4"
+                    placeholder="Describe your expense..."
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit" class="btn">
+                Submit Claim
+            </button>
+
+        </form>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        © 2026 Expense Reimbursement System. All rights reserved.
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+
+        // Get HTML elements
+        const msg = document.getElementById("msg");
+        const err = document.getElementById("err");
+        const contact = document.getElementById("contact");
+        const expense = document.getElementById("expense");
+        const managerNav = document.getElementById("mgr");
+
+        // Display submission messages
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get("success") === "1") {
+            msg.textContent = "Claim submitted successfully!";
+        }
+
+        if (params.get("error")) {
+            err.textContent = "Please enter valid claim details.";
+        }
+
+        // Load logged-in employee details
+        fetch("api/user")
+            .then(response => {
+
+                if (response.status === 401) {
+                    window.location.href = "login.html";
+                    throw new Error("Unauthorized");
+                }
+
+                if (!response.ok) {
+                    throw new Error("Unable to load user details");
+                }
+
+                return response.json();
+            })
+            .then(user => {
+
+                contact.value = user.contactNumber || "";
+
+                if (user.designation === "Manager") {
+                    managerNav.hidden = false;
+                }
+
+            })
+            .catch(error => {
+                console.error("User details error:", error);
+            });
+
+        // Load expense categories
+        fetch("api/expenses")
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error("Unable to load expenses");
+                }
+
+                return response.json();
+            })
+            .then(categories => {
+
+                expense.innerHTML = "";
+
+                const defaultOption = document.createElement("option");
+                defaultOption.value = "";
+                defaultOption.textContent = "Select Expense Type";
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+
+                expense.appendChild(defaultOption);
+
+                categories.forEach(category => {
+
+                    const option = document.createElement("option");
+
+                    option.value = category.code;
+                    option.textContent = category.description;
+
+                    expense.appendChild(option);
+                });
+
+            })
+            .catch(error => {
+
+                console.error("Expense loading error:", error);
+
+                expense.innerHTML =
+                    '<option value="">Could not load categories</option>';
+
+            });
+
+    </script>
+
+</body>
+</html>

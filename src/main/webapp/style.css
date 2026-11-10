@@ -1,0 +1,430 @@
+
+/* =========================================
+   1. GLOBAL STYLING
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #263449;
+    background: #edf3ff;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   2. HEADER
+========================================= */
+
+.main-header {
+    background: #2188e8;
+    color: #ffffff;
+    text-align: center;
+    padding: 14px 15px;
+}
+
+.main-header h1 {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* =========================================
+   3. NAVIGATION
+========================================= */
+
+.main-nav {
+    background: #2188e8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 5px 15px 16px;
+    margin: 0;
+}
+
+.main-nav a {
+    display: inline-block;
+    background: #ffffff;
+    color: #2188e8;
+    text-decoration: none;
+    padding: 9px 18px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+    background: #e5f1ff;
+    color: #126fc4;
+}
+
+.main-nav span[hidden] {
+    display: none;
+}
+
+/* =========================================
+   4. MAIN CONTENT
+========================================= */
+
+.page-content {
+    width: 100%;
+    flex: 1;
+    padding: 30px 15px 45px;
+}
+
+.page-title {
+    text-align: center;
+    color: #263f70;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 22px;
+}
+
+h1, h2, h3 {
+    color: #263f70;
+}
+
+/* =========================================
+   5. FORMS
+========================================= */
+
+form {
+    background: #ffffff;
+}
+
+.login-form,
+.claim-form {
+    width: 90%;
+    max-width: 700px;
+    margin: 0 auto 32px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 5px 18px rgba(35, 65, 110, 0.12);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    color: #344563;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* =========================================
+   6. INPUT FIELDS
+========================================= */
+
+input,
+select,
+textarea {
+    width: 100%;
+    display: block;
+    font-family: inherit;
+    font-size: 14px;
+    color: #263449;
+    background: #f5f8fc;
+    border: 1px solid #d8e1ef;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 0;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    background: #ffffff;
+    border-color: #2188e8;
+    box-shadow: 0 0 0 3px rgba(33, 136, 232, 0.12);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    width: auto;
+    display: inline-block;
+}
+
+input[type="date"] {
+    min-width: 170px;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.login-form input,
+.claim-form input,
+.claim-form select,
+.claim-form textarea {
+    margin-top: 5px;
+}
+
+/* =========================================
+   7. BUTTONS
+========================================= */
+
+.btn,
+button,
+input[type="submit"] {
+    display: inline-block;
+    background: #2188e8;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover {
+    background: #126fc4;
+}
+
+.login-form .btn,
+.claim-form .btn {
+    background: #2188e8;
+    color: #ffffff;
+}
+
+/* =========================================
+   8. TABLES
+========================================= */
+
+.claims-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin: 20px auto 35px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(35, 65, 110, 0.08);
+}
+
+.claims-table {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+    margin: 0;
+    background: #ffffff;
+}
+
+.claims-table th {
+    background: #dce9ff;
+    color: #263f70;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.claims-table th,
+.claims-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e5ebf3;
+    font-size: 14px;
+}
+
+.claims-table tbody tr:hover {
+    background: #f5f8ff;
+}
+
+.claims-table td {
+    vertical-align: middle;
+}
+
+.loading {
+    text-align: center !important;
+    padding: 25px !important;
+    color: #64748b;
+}
+
+/* =========================================
+   9. CLAIM STATUS
+========================================= */
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-approved {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* =========================================
+   10. MANAGER ACTION BUTTONS
+========================================= */
+
+.action-cell {
+    min-width: 290px;
+    white-space: nowrap;
+}
+
+.claim-action-form {
+    display: inline-block;
+    width: auto;
+    padding: 0;
+    margin: 3px;
+    background: transparent;
+    box-shadow: none;
+}
+
+.claim-action-form button {
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-approve {
+    background: #269b5c;
+    color: #ffffff;
+}
+
+.btn-approve:hover {
+    background: #187a45;
+}
+
+.btn-reject {
+    background: #df5353;
+    color: #ffffff;
+}
+
+.btn-reject:hover {
+    background: #c83c3c;
+}
+
+.btn-refer {
+    background: #e99a32;
+    color: #ffffff;
+}
+
+.btn-refer:hover {
+    background: #cc7c19;
+}
+
+/* =========================================
+   11. SUCCESS AND ERROR MESSAGES
+========================================= */
+
+.error {
+    color: #d32f2f;
+    font-weight: 600;
+}
+
+.success {
+    color: #21834a;
+    font-weight: 600;
+}
+
+.message-container {
+    width: 90%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.message-container p {
+    margin: 8px 0;
+}
+
+/* =========================================
+   12. FOOTER
+========================================= */
+
+.main-footer {
+    margin-top: auto;
+    width: 100%;
+    background: #2188e8;
+    color: #ffffff;
+    text-align: center;
+    padding: 12px;
+    font-size: 13px;
+}
+
+/* =========================================
+   13. RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 768px) {
+
+    .main-header h1 {
+        font-size: 21px;
+    }
+
+    .main-nav {
+        gap: 8px;
+    }
+
+    .main-nav a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .page-content {
+        padding: 22px 10px 35px;
+    }
+
+    .page-title {
+        font-size: 21px;
+    }
+
+    .login-form,
+    .claim-form {
+        width: 95%;
+        padding: 22px 18px;
+    }
+
+    .message-container {
+        width: 95%;
+    }
+
+    .claims-table {
+        min-width: 750px;
+    }
+
+    .action-cell {
+        min-width: 290px;
+    }
+}

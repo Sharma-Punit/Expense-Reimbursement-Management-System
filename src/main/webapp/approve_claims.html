@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Approve Claims | Claim Management System</title>
+
+    <link rel="stylesheet" href="style.css?v=12348">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="main-header">
+        <h1>Claim Management System</h1>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <a href="raise_claim.html">Raise Claim</a>
+        <a href="my_claims.html">My Claims</a>
+        <a href="approve_claims.html" class="active">Approve Claims</a>
+        <a href="logout">Logout</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="page-content">
+
+        <h2 class="page-title">Manager Dashboard - Pending Claims</h2>
+
+        <div class="message-container">
+            <p id="msg" class="success" role="status"></p>
+            <p id="err" class="error" role="alert"></p>
+        </div>
+
+        <!-- Pending Claims Table -->
+        <div class="claims-table-container">
+
+            <table class="claims-table">
+
+                <thead>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Employee</th>
+                        <th>Submitted On</th>
+                        <th>Expense Type</th>
+                        <th>Amount (₹)</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="rows">
+                    <tr>
+                        <td colspan="7" class="loading">
+                            Loading pending claims...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        © 2026 Expense Reimbursement System. All rights reserved.
+    </footer>
+
+    <!-- Manager Dashboard JavaScript -->
+    <script>
+
+        const rows = document.getElementById("rows");
+        const msg = document.getElementById("msg");
+        const err = document.getElementById("err");
+
+        // Display success message
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get("updated")) {
+            msg.textContent = "Claim status updated successfully.";
+        }
+
+        // Create action form
+        function createActionForm(claimId, status, buttonText, buttonClass) {
+
+            const form = document.createElement("form");
+
+            form.method = "post";
+            form.action = "api/update-claim";
+            form.className = "claim-action-form";
+
+            const claimInput = document.createElement("input");
+            claimInput.type = "hidden";
+            claimInput.name = "claimId";
+            claimInput.value = claimId;
+
+            const statusInput = document.createElement("input");
+            statusInput.type = "hidden";
+            statusInput.name = "status";
+            statusInput.value = status;
+
+            const button = document.createElement("button");
+            button.type = "submit";
+            button.className = buttonClass;
+            button.textContent = buttonText;
+
+            form.append(claimInput, statusInput, button);
+
+            return form;
+        }
+
+        // Load pending claims
+        fetch("api/pending-claims")
+
+            .then(response => {
+
+                if (response.status === 401) {
+                    window.location.href = "login.html";
+                    throw new Error("Unauthorized");
+                }
+
+                if (response.status === 403) {
+                    throw new Error("Manager access only.");
+                }
+
+                if (!response.ok) {
+                    throw new Error("Unable to load pending claims.");
+                }
+
+                return response.json();
+            })
+
+            .then(claims => {
+
+                rows.innerHTML = "";
+
+                if (!claims.length) {
+
+                    rows.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="loading">
+                                No pending claims.
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+                }
+
+                claims.forEach(claim => {
+
+                    const tr = document.createElement("tr");
+
+                    const employee =
+                        claim.employeeName + " (" + claim.employeeCode + ")";
+
+                    const values = [
+                        claim.id,
+                        employee,
+                        claim.date,
+                        claim.expense,
+                        claim.amount,
+                        claim.description
+                    ];
+
+                    values.forEach(value => {
+
+                        const td = document.createElement("td");
+
+                        td.textContent = value ?? "";
+
+                        tr.appendChild(td);
+                    });
+
+                    // Action Buttons
+                    const actionTd = document.createElement("td");
+
+                    actionTd.className = "action-cell";
+
+                    actionTd.appendChild(
+                        createActionForm(
+                            claim.id, 3, "Approve", "btn-approve"
+                        )
+                    );
+
+                    actionTd.appendChild(
+                        createActionForm(
+                            claim.id, 4, "Reject", "btn-reject"
+                        )
+                    );
+
+                    actionTd.appendChild(
+                        createActionForm(
+                            claim.id, 5, "Refer Back", "btn-refer"
+                        )
+                    );
+
+                    tr.appendChild(actionTd);
+
+                    rows.appendChild(tr);
+
+                });
+
+            })
+
+            .catch(error => {
+
+                if (error.message === "Unauthorized") {
+                    return;
+                }
+
+                rows.innerHTML = "";
+
+                err.textContent =
+                    error.message || "Unable to load claims.";
+
+            });
+
+    </script>
+
+</body>
+</html>

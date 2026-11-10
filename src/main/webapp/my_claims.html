@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Claims | Claim Management System</title>
+
+    <link rel="stylesheet" href="style.css?v=12346">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="main-header">
+        <h1>Claim Management System</h1>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <a href="raise_claim.html">Raise Claim</a>
+        <a href="my_claims.html" class="active">My Claims</a>
+        <a href="logout">Logout</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="page-content">
+
+        <h2 class="page-title">My Claims</h2>
+
+        <p id="err" class="error" role="alert"></p>
+
+        <div class="claims-table-container">
+
+            <table class="claims-table">
+
+                <thead>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Submitted On</th>
+                        <th>Expense Type</th>
+                        <th>Amount (₹)</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="rows">
+                    <tr>
+                        <td colspan="6" class="loading">
+                            Loading your claims...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        © 2026 Expense Reimbursement System. All rights reserved.
+    </footer>
+
+    <!-- Fetch Claims From Java Servlet -->
+    <script>
+        const rows = document.getElementById("rows");
+        const err = document.getElementById("err");
+
+        fetch("api/my-claims")
+            .then(response => {
+
+                if (response.status === 401) {
+                    window.location.href = "login.html";
+                    throw new Error("Unauthorized");
+                }
+
+                if (!response.ok) {
+                    throw new Error("Failed to load claims");
+                }
+
+                return response.json();
+            })
+            .then(claims => {
+
+                rows.innerHTML = "";
+
+                if (!claims.length) {
+                    rows.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="loading">
+                                No claims submitted yet.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                claims.forEach(claim => {
+
+                    const tr = document.createElement("tr");
+
+                    const values = [
+                        claim.id,
+                        claim.date,
+                        claim.expense,
+                        claim.amount,
+                        claim.description
+                    ];
+
+                    values.forEach(value => {
+                        const td = document.createElement("td");
+                        td.textContent = value ?? "";
+                        tr.appendChild(td);
+                    });
+
+                    // Status Column
+                    const statusTd = document.createElement("td");
+
+                    const status = document.createElement("span");
+                    const statusText = String(claim.status ?? "");
+
+                    status.className = "status-badge";
+
+                    if (statusText.toLowerCase() === "approved") {
+                        status.classList.add("status-approved");
+                    } else if (statusText.toLowerCase() === "rejected") {
+                        status.classList.add("status-rejected");
+                    } else {
+                        status.classList.add("status-pending");
+                    }
+
+                    status.textContent = statusText;
+
+                    statusTd.appendChild(status);
+                    tr.appendChild(statusTd);
+
+                    rows.appendChild(tr);
+                });
+
+            })
+            .catch(error => {
+
+                if (error.message === "Unauthorized") {
+                    return;
+                }
+
+                rows.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="loading">
+                            Unable to load claims.
+                        </td>
+                    </tr>
+                `;
+
+                err.textContent = "Unable to load claims. Please try again.";
+            });
+    </script>
+
+</body>
+</html>
