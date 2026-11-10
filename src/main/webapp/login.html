@@ -8,7 +8,7 @@
 
     <title>Employee Login | Expense Reimbursement System</title>
 
-    <link rel="stylesheet" href="style.css?v=12346">
+    <link rel="stylesheet" href="style.css?v=12349">
 </head>
 
 <body>
@@ -28,17 +28,21 @@
 
         <h2 class="page-title">Employee Login</h2>
 
-        <form action="login" method="post" class="login-form">
+        <form action="login" method="post" class="login-form" id="loginForm">
 
             <div class="form-group">
                 <label for="employee_code">Employee Code</label>
 
                 <input
-                    type="number"
+                    type="text"
                     id="employee_code"
                     name="employee_code"
                     placeholder="Enter Employee Code"
                     required
+                    inputmode="numeric"
+                    pattern="[0-9]{1,10}"
+                    maxlength="10"
+                    title="Enter a valid employee code containing only numbers"
                 >
             </div>
 
@@ -51,10 +55,13 @@
                     name="password"
                     placeholder="Enter Password"
                     required
+                    minlength="4"
+                    maxlength="72"
+                    autocomplete="current-password"
                 >
             </div>
 
-            <p id="error" class="error"></p>
+            <p id="error" class="error" role="alert" aria-live="polite"></p>
 
             <button type="submit" class="btn">
                 Login
@@ -69,14 +76,77 @@
         © 2026 Expense Reimbursement System. All rights reserved.
     </footer>
 
-    <!-- Login Error Handling -->
+    <!-- Login Validation and Error Handling -->
     <script>
+
+        const loginForm = document.getElementById("loginForm");
+        const employeeCode = document.getElementById("employee_code");
+        const password = document.getElementById("password");
+        const error = document.getElementById("error");
+
+        // Clear validation message when user starts correcting input
+        employeeCode.addEventListener("input", function () {
+            error.textContent = "";
+        });
+
+        password.addEventListener("input", function () {
+            error.textContent = "";
+        });
+
+        // Client-side validation
+        loginForm.addEventListener("submit", function (event) {
+
+            error.textContent = "";
+
+            const code = employeeCode.value.trim();
+            const pass = password.value;
+
+            if (!code) {
+                event.preventDefault();
+                error.textContent = "Please enter your Employee Code.";
+                employeeCode.focus();
+                return;
+            }
+
+            if (!/^[0-9]{1,10}$/.test(code)) {
+                event.preventDefault();
+                error.textContent =
+                    "Employee Code must contain 1 to 10 digits only.";
+                employeeCode.focus();
+                return;
+            }
+
+            if (!pass) {
+                event.preventDefault();
+                error.textContent = "Please enter your Password.";
+                password.focus();
+                return;
+            }
+
+            if (pass.length < 4) {
+                event.preventDefault();
+                error.textContent =
+                    "Password must contain at least 4 characters.";
+                password.focus();
+                return;
+            }
+
+            if (new TextEncoder().encode(pass).length > 72) {
+                event.preventDefault();
+                error.textContent = "Password is too long.";
+                password.focus();
+                return;
+            }
+
+        });
+
+        // Handle invalid login response from Java Servlet
         const params = new URLSearchParams(window.location.search);
 
         if (params.get("error") === "invalid") {
-            document.getElementById("error").textContent =
-                "Invalid Employee Code or Password";
+            error.textContent = "Invalid Employee Code or Password.";
         }
+
     </script>
 
 </body>

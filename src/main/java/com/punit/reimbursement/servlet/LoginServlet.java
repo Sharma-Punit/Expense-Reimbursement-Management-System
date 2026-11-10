@@ -2,6 +2,7 @@
 package com.punit.reimbursement.servlet;
 
 import com.punit.reimbursement.DBConnection;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,15 +22,22 @@ import java.sql.SQLException;
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
+    @Override
     protected void doPost(HttpServletRequest req,
                           HttpServletResponse resp)
             throws ServletException, IOException {
 
+        // Step 1: Get login details
         String code = req.getParameter("employee_code");
         String pass = req.getParameter("password");
 
+        // Step 2: Validate input
         if (code == null || pass == null ||
-                !code.matches("\\d+") || pass.isEmpty()) {
+                !code.matches("\\d{1,10}") ||
+                pass.isEmpty() ||
+                pass.length() < 4 ||
+                pass.getBytes(StandardCharsets.UTF_8).length > 72) {
+
             resp.sendRedirect("login.html?error=invalid");
             return;
         }
@@ -42,6 +51,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        // Step 3: Fetch employee details
         String sql = "SELECT EmployeeCode, Password, Name, " +
                 "Designation, ContactNumber, ReportingManagerCode " +
                 "FROM EmployeeMaster WHERE EmployeeCode=?";
@@ -59,51 +69,67 @@ public class LoginServlet extends HttpServlet {
                 }
 
                 String storedPassword = r.getString("Password");
-                boolean passwordValid;
+                boolean passwordValid = false;
 
-                // Verify an existing BCrypt password
-                if (storedPassword != null &&
-                        storedPassword.startsWith("$2a$")) {
+                // Step 4: Verify password
+                if (storedPassword != null) {
 
-                    passwordValid =
-                            BCrypt.checkpw(pass, storedPassword);
+                    // Check BCrypt password
+                    if (storedPassword.startsWith("$2a$") ||
+                            storedPassword.startsWith("$2b$") ||
+                            storedPassword.startsWith("$2y$")) {
 
-                } else {
-                    // Support existing plain-text accounts temporarily
-                    passwordValid =
-                            storedPassword != null &&
-                            storedPassword.equals(pass);
+                        try {
+                            passwordValid =
+                                    BCrypt.checkpw(pass, storedPassword);
+                        } catch (IllegalArgumentException e) {
+                            passwordValid = false;
+                        }
 
-                    // Automatically upgrade password after successful login
-                    if (passwordValid) {
-                        String hashedPassword =
-                                BCrypt.hashpw(pass, BCrypt.gensalt(12));
+                    } else {
 
-                        try (PreparedStatement update =
-                                c.prepareStatement(
-                                    "UPDATE EmployeeMaster " +
-                                    "SET Password=? WHERE EmployeeCode=?")) {
+                        // Support old plain-text passwords temporarily
+                        passwordValid = storedPassword.equals(pass);
 
-                            update.setString(1, hashedPassword);
-                            update.setInt(2, employeeCode);
-                            update.executeUpdate();
+                        // Automatically convert to BCrypt
+                        if (passwordValid) {
+
+                            String hashedPassword =
+                                    BCrypt.hashpw(
+                                            pass,
+                                            BCrypt.gensalt(12)
+                                    );
+
+                            try (PreparedStatement update =
+                                    c.prepareStatement(
+                                            "UPDATE EmployeeMaster " +
+                                            "SET Password=? " +
+                                            "WHERE EmployeeCode=?")) {
+
+                                update.setString(1, hashedPassword);
+                                update.setInt(2, employeeCode);
+                                update.executeUpdate();
+                            }
                         }
                     }
                 }
 
+                // Step 5: Reject invalid credentials
                 if (!passwordValid) {
                     resp.sendRedirect("login.html?error=invalid");
                     return;
                 }
 
-                // Prevent session fixation
+                // Step 6: Prevent session fixation
                 HttpSession oldSession = req.getSession(false);
 
                 if (oldSession != null) {
                     oldSession.invalidate();
                 }
 
+                // Step 7: Create secure login session
                 HttpSession session = req.getSession(true);
+
                 session.setMaxInactiveInterval(15 * 60);
 
                 session.setAttribute("employeeCode",
@@ -124,11 +150,15 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("reportingManagerCode",
                         r.wasNull() ? null : managerCode);
 
+                // Step 8: Redirect after successful login
                 resp.sendRedirect("raise_claim.html");
             }
 
         } catch (SQLException e) {
-            throw new ServletException("Login/database error", e);
+
+            throw new ServletException(
+                    "Login/database error", e
+            );
         }
     }
 }
